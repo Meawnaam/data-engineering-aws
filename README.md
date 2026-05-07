@@ -1,54 +1,100 @@
-# รายงานโครงการฉบับสมบูรณ์: ระบบวิเคราะห์พฤติกรรมเครดิตอัตโนมัติบนสถาปัตยกรรมคลาวด์แบบ Serverless
-**Project Title: End-to-End Automated Cloud-Based Credit Behavioral Scoring Pipeline**
+เพื่อให้รายงานฉบับนี้สมบูรณ์แบบที่สุดสำหรับระดับ **MSDS** ผมได้ปรับปรุงเนื้อหาให้มีความเป็นวิชาการ (Academic Tone) ผสมผสานกับแนวคิดเชิงธุรกิจ (Business Value) พร้อมทั้งจัดโครงสร้างให้สวยงามและอ่านง่ายครับ
 
 ---
 
-## 1. บทนำและแรงจูงใจของโครงการ (Executive Summary & Motivation)
-ในระบบการเงินแบบดั้งเดิม การพิจารณาวงเงินสินเชื่อมักอาศัยข้อมูลเชิงสถิติที่หยุดนิ่ง (Static Data) เช่น รายได้ประจำหรือประวัติค้างชำระ ซึ่งไม่สามารถสะท้อนศักยภาพที่แท้จริงของผู้กู้บางกลุ่มได้ โครงการนี้จึงมุ่งเน้นการสร้างระบบประมวลผลข้อมูลธุรกรรมรายวัน (Alternative Data) เพื่อวิเคราะห์พฤติกรรม (Behavioral Insights) และเปลี่ยนให้เป็นคะแนนที่จับต้องได้ โดยใช้เทคโนโลยี Cloud Computing ในรูปแบบ **Serverless Architecture** เพื่อให้ระบบมีความยืดหยุ่น ประหยัดค่าใช้จ่าย และทำงานได้โดยอัตโนมัติ (Fully Automated) ตั้งแต่ต้นน้ำจนถึงปลายน้ำ
+# 📑 รายงานโครงการฉบับสมบูรณ์: ระบบวิศวกรรมข้อมูลเพื่อการวิเคราะห์คะแนนเครดิตเชิงพฤติกรรมบนสถาปัตยกรรมคลาวด์แบบ Serverless
+**Project Title:** End-to-End Automated Cloud-Based Credit Behavioral Scoring Pipeline
 
-## 2. การวิเคราะห์ปัญหาและข้อจำกัด (Problem Identification)
-จากการทดลองเบื้องต้น พบปัญหาสำคัญ 3 ประการที่ต้องแก้ไขด้วยวิศวกรรมข้อมูล:
-1.  **Data Quality & Integrity:** ข้อมูลที่รับมาจากระบบภายนอกมีความไม่เป็นระเบียบไม่สะอาดและมีปัญหาข้อมูลซ้ำ (Data Duplication) จากการส่งข้อมูลซ้ำในระบบเครือข่าย
-2.  **Scoring Skewness:** สูตรการคำนวณแบบเดิม (Rule-based) ขาดความละเอียด ทำให้ลูกค้าส่วนใหญ่มีคะแนนสูงเกินจริง (Clustering at 100) ไม่สามารถนำมาจัดลำดับความเสี่ยง (Risk Ranking) ได้อย่างมีประสิทธิภาพ
-3.  **Scalability & Observability:** การรันสคริปต์แบบ Manual ไม่สามารถรองรับการขยายตัวได้ และหากเกิดข้อผิดพลาดในขั้นตอนใดขั้นตอนหนึ่ง จะไม่สามารถทราบสาเหตุได้ทันทีหากขาดระบบ Logging ที่ดี
+---
 
-## 3. สถาปัตยกรรมทางเทคนิค (Detailed Technical Architecture)
+## 1. บทนำและที่มาของโครงการ (Project Overview & Rationale)
+ในยุค Digital Transformation สถาบันการเงินจำเป็นต้องปรับตัวจากการใช้เพียงข้อมูลแบบดั้งเดิม (Static Data) มาเป็นการวิเคราะห์ **Alternative Data** เพื่อให้เข้าถึงพฤติกรรมผู้บริโภคที่แท้จริง โครงการนี้จึงถูกออกแบบมาเพื่อสร้างระบบ **Automated Data Pipeline** ที่ทำหน้าที่รวบรวม ประมวลผล และวิเคราะห์ข้อมูลธุรกรรมรายวัน (Transaction Data) เพื่อคำนวณคะแนน **Credit Behavioral Score** แบบอัตโนมัติ โดยมุ่งเน้นที่ความถูกต้องของข้อมูล (Data Integrity) และความสามารถในการขยายตัวของระบบ (Scalability)
 
-### 3.1 Data Ingestion Layer (เลเยอร์การนำเข้าข้อมูล)
-* **Source Side:** พัฒนา `sender.py` ให้ทำหน้าที่เป็น Ingester ที่มีระบบ **Local State Tracking** โดยการเก็บบันทึกประวัติลงใน `transfer_history.csv` เพื่อป้องกันการส่งไฟล์ซ้ำและตรวจสอบสถานะการส่งในระดับเครื่องต้นทาง
-* **Cloud Gateway:** ใช้ **Amazon API Gateway** เป็นทางเข้าหลักเพื่อความปลอดภัย และส่งต่อให้ **AWS Lambda** บันทึกข้อมูลลงใน S3 โดยแยกโฟลเดอร์ตามวันเวลา (Partitioning) เพื่อความง่ายในการดึงข้อมูลย้อนหลัง (Data Archiving)
+## 2. การวิเคราะห์ปัญหาและแนวทางการแก้ไข (Problem Analysis & Solutions)
 
-### 3.2 Data Processing & Transformation (เลเยอร์การประมวลผล)
-* **Data Cleaning Pipeline:** Lambda Function จะทำการแปลงข้อมูลดิบ (Raw Data) ให้เป็นโครงสร้างมาตรฐาน (Silver Layer) โดยใช้ห้องสมุด **Pandas** ในการทำ:
-    * **Deduplication:** กำจัดรายการธุรกรรมที่ซ้ำกันโดยใช้ `txn_id` เป็น Unique Key
-    * **Standardization:** ปรับแต่งค่าสกุลเงิน (Currency Conversion) และรูปแบบวันที่ (Timestamp Normalization)
-* **ETL Orchestration:** ใช้ **Amazon EventBridge** เป็นตัวควบคุมจังหวะเวลา (Scheduler) โดยตั้งค่าให้รันทุกวันในช่วงเวลาที่ Traffic ต่ำ (00:05 น.) เพื่อรวบรวมข้อมูลทั้งหมดของวันนั้นมาประมวลผลสรุปยอด
+| ปัญหาที่พบ (Challenges) | แนวทางการแก้ไข (Engineering Solutions) |
+| :--- | :--- |
+| **Data Quality:** รูปแบบวันที่ไม่สอดคล้องและมีข้อมูลซ้ำซ้อน | ใช้ **Pandas** ภายใน Lambda เพื่อทำ Data Standardization และ Deduplication |
+| **Scoring Skewness:** คะแนนเกาะกลุ่มสูงเกินไป ไม่สามารถแยกแยะกลุ่มเสี่ยงได้ | พัฒนา **Multi-factor Scoring Logic** โดยใช้ตัวหาร (Denominator) ที่สะท้อนความเป็นจริง |
+| **System Automation:** การรันงานด้วยมือมีความเสี่ยงต่อความผิดพลาด | ใช้ **AWS EventBridge** เป็น Scheduler ควบคุมจังหวะเวลาการทำ ETL |
+| **Observability:** ขาดการติดตามประวัติการนำเข้าข้อมูล | ออกแบบระบบ **Dual-Logging** ทั้งบนเครื่อง Local (CSV) และบน Cloud (RDS Log) |
 
-### 3.3 Database Design & Feature Mart (เลเยอร์การจัดเก็บข้อมูล)
-ออกแบบระบบฐานข้อมูลบน **Amazon RDS (MySQL)** โดยแบ่งตารางเพื่อวัตถุประสงค์ที่ต่างกัน:
-* **`credit_feature_mart`:** เก็บสถานะล่าสุดของลูกค้าแต่ละราย (Current State) เพื่อการ Query ที่รวดเร็ว
-* **`credit_score_history`:** เก็บข้อมูลแบบ Time-series เพื่อใช้ดูแนวโน้มพฤติกรรม (Trend Analysis) และการเปลี่ยนแปลงของคะแนนรายวัน
-* **`data_load_logs`:** เก็บ Audit Log ของการประมวลผลในระดับไฟล์ เพื่อใช้ในกระบวนการ Data Reconcile
+## 3. สถาปัตยกรรมทางเทคนิค (Technical Architecture)
 
-## 4. การออกแบบฟีเจอร์และการให้คะแนน (Advanced Feature Engineering)
-เราได้ออกแบบสูตรการให้คะแนนแบบ **Multi-factor Scoring Model** เพื่อกระจายตัวเลขคะแนนให้สะท้อนความเป็นจริง:
+```mermaid
+graph LR
+    subgraph Local_Source [Local Environment]
+        A[Python Script: sender.py] -->|Read| B[(JSON Data Batches)]
+        A -->|Write Log| C[transfer_history.csv]
+    end
 
-| Factor | Weight | Logic / Rationale |
-| :--- | :--- | :--- |
-| **Total Spending** | 40% | ปริมาณกระแสเงินสดหมุนเวียน (Cap 500,000 THB) |
-| **Category Diversity** | 30% | ความหลากหลายของการใช้จ่าย สะท้อนถึงเสถียรภาพในการใช้ชีวิต |
-| **Transaction Frequency** | 20% | ความถี่ในการใช้งานระบบ เพื่อวัดความสม่ำเสมอของพฤติกรรม |
-| **Average Ticket Size** | 10% | กำลังซื้อต่อครั้ง เพื่อระบุระดับรายได้ (Wealth Segment) |
+    subgraph AWS_Cloud [AWS Cloud Platform]
+        direction TB
+        
+        subgraph Ingestion [Ingestion Layer]
+            D[API Gateway] --> E[Lambda: Ingester]
+            E -->|Store Raw| F[S3: Raw Bucket]
+        end
 
-นอกจากนี้ยังมีการเพิ่มคอลัมน์ **`essential_spending_ratio`** เพื่อคำนวณสัดส่วนค่าใช้จ่ายจำเป็น (อาหาร, ค่าน้ำไฟ, ประกัน) ซึ่งเป็นตัวแปรสำคัญที่ใช้ประเมินความสามารถในการชำระหนี้ (Debt Serviceability)
+        subgraph Transformation [Processing Layer]
+            F --> G[Lambda: Data-Processor]
+            G -->|Clean & Format| H[S3: Processed Bucket]
+        end
 
-## 5. การวิเคราะห์ผลลัพธ์และแดชบอร์ด (Results & Visualization)
-จากการเชื่อมต่อ RDS เข้ากับ **Looker Studio** พบ Insight ที่สำคัญดังนี้:
-* **Segmentation:** สามารถแบ่งลูกค้าออกเป็น 3 กลุ่มหลัก (Prime, Near-prime, Sub-prime) ตามการกระจายตัวของคะแนนแบบ **Normal Distribution**
-* **Correlation:** พบความสัมพันธ์เชิงบวกระหว่างความหลากหลายของหมวดหมู่สินค้าและคะแนนความน่าเชื่อถือ
-* **Monitoring:** ระบบสามารถรายงานจำนวนธุรกรรมที่ผ่านการประมวลผลสำเร็จเทียบกับที่ล้มเหลวได้แบบ Real-time ผ่าน Audit Logs
+        subgraph Analytics [Analytics & Storage Layer]
+            I[EventBridge: Cron 00:05] -->|Trigger| J[Lambda: RDS-Aggregator]
+            H --> J
+            J -->|Insert/Update| K[(Amazon RDS: MySQL)]
+        end
+    end
 
-## 6. สรุปผลและทิศทางในอนาคต (Conclusion & Roadmap)
-โครงการนี้พิสูจน์ให้เห็นว่าระบบ Serverless สามารถสร้าง Data Pipeline ที่ซับซ้อนได้โดยมีความซับซ้อนในการดูแลต่ำ (Low Operations)
-* **Short-term:** เพิ่มระบบแจ้งเตือนผ่าน Line Notify หรือ Email เมื่อคะแนนลูกค้าบางรายตกลงอย่างผิดปกติ
-* **Long-term:** พัฒนาไปสู่การใช้ **Machine Learning (AWS SageMaker)** เพื่อทำ Predictive Scoring โดยใช้ผลลัพธ์จาก Pipeline นี้เป็น Training Dataset เพื่อสร้างโมเดลที่มีความแม่นยำสูงกว่าระบบ Rule-based
+    subgraph BI_Layer [Visualization]
+        K --> L[Looker Studio Dashboard]
+    end
+
+    %% Styling
+    style Local_Source fill:#f5f5f5,stroke:#333
+    style AWS_Cloud fill:#fff,stroke:#ff9900,stroke-width:2px
+    style K fill:#01579b,color:#fff
+```
+
+## 4. รายละเอียดการประมวลผลข้อมูล (Data Pipeline Logic)
+
+### 4.1 Data Cleaning & Pre-processing
+ในขั้นตอน **Data-Processor** ระบบจะทำการ Transform ข้อมูลดิบให้เป็นโครงสร้างที่พร้อมสำหรับ Analytics (Silver Layer) ดังนี้:
+* **Timestamp Normalization:** แปลงวันที่จากรูปแบบคละกัน (เช่น DD/MM/YYYY หรือ ISO) ให้เป็นมาตรฐาน `YYYY-MM-DD HH:MM:SS`
+* **Deduplication:** กำจัดข้อมูลซ้ำซ้อนด้วย `txn_id` เพื่อป้องกันการคำนวณยอดเงินเกินจริง (Overcounting)
+* **Currency Conversion:** ตรวจสอบคอลัมน์ `curr` และแปลงยอดเงินจาก USD/JPY ให้เป็น THB ตามอัตราแลกเปลี่ยนปัจจุบัน
+
+### 4.2 Feature Engineering: Behavioral Scoring Model
+หัวใจของระบบคือการคำนวณคะแนนโดยใช้ปัจจัยถ่วงน้ำหนัก (Weighted Scoring) ดังนี้:
+1.  **Financial Stability (40%):** วัดจาก `total_spent_thb` (Max Score ที่ 500,000 THB)
+2.  **Lifestyle Diversity (30%):** วัดจาก `distinct_categories` (Max Score ที่ 10 หมวดหมู่)
+3.  **Financial Consistency (20%):** วัดจาก `txn_count` (Max Score ที่ 150 รายการ)
+4.  **Purchasing Power (10%):** วัดจาก `avg_ticket_size` (เปรียบเทียบกับกลุ่มตัวอย่าง)
+
+นอกจากนี้ยังมีการคำนวณ **Essential Spending Ratio** เพื่อแยกแยะสัดส่วนค่าใช้จ่ายจำเป็น ซึ่งเป็นตัวชี้วัดสำคัญของ "ความสามารถในการชำระหนี้" (Debt Serviceability)
+
+## 5. การออกแบบฐานข้อมูล (Relational Database Schema)
+เราเลือกใช้ **Amazon RDS (MySQL)** เพื่อรองรับการทำ ACID Transactions โดยแบ่งตารางดังนี้:
+* **`credit_feature_mart`:** ตารางหลักที่เก็บสถานะปัจจุบันของลูกค้า (Current Profile)
+* **`credit_score_history`:** ตารางเก็บประวัติ (Historical Data) เพื่อใช้ทำ Time-series Analysis ใน Looker Studio
+* **`data_load_logs`:** ตาราง Audit เพื่อตรวจสอบ Row Count ของข้อมูลที่ไหลเข้าระบบในแต่ละไฟล์
+
+## 6. ผลลัพธ์และสรุปโครงการ (Results & Conclusion)
+* **High Efficiency:** ระบบทำงานแบบ Serverless 100% ทำให้ไม่มีค่าใช้จ่ายในขณะที่ไม่มีข้อมูลไหลเข้า และขยายตัวได้ทันทีเมื่อมีข้อมูลปริมาณมาก
+* **Insightful Visualization:** Looker Studio แสดงผลการกระจายตัวของคะแนนแบบ **Normal Distribution** ช่วยให้ฝ่ายวิเคราะห์ความเสี่ยงสามารถคัดกรองลูกค้า (Segmentation) ได้อย่างแม่นยำ
+* **Standardized Process:** โครงการนี้ได้สร้างมาตรฐานการจัดการข้อมูลตั้งแต่ต้นน้ำถึงปลายน้ำ ซึ่งสามารถนำไปต่อยอดใช้กับโมเดล Machine Learning ในอนาคตได้ทันที
+
+---
+**นำเสนอโดย:** นรวิชญ์ ธราภูมิพิพัฒน์ (Narawit Tharapoompipat)
+**หลักสูตร:** Master of Science in Data Science (MSDS)
+**หัวข้อโครงการ:** วิศวกรรมข้อมูลและวิเคราะห์คะแนนเครดิต (Data Engineering & Credit Analytics)
+---
+
+### 💡 คำแนะนำเพิ่มเติมสำหรับการ Present:
+* **ตอนพูดถึง Mermaid Diagram:** ให้เน้นว่าระบบเป็น **"Event-Driven"** คือทำงานเมื่อมีข้อมูลใหม่เข้ามาเท่านั้น
+* **ตอนพูดถึง Scoring:** อธิบายว่าเราใช้ความรู้ด้าน **Domain Expertise** ในการกำหนด Weights (เช่น ทำไมถึงให้ความสำคัญกับยอดรวม 40%)
+* **ตอนสรุป:** พูดถึงแนวโน้มการนำไปทำ **Predictive Modeling** เพื่อโชว์วิสัยทัศน์ในฐานะนักศึกษา Data Science ครับ
+
+**ขอให้การ Present ราบรื่นและได้เกรด A นะครับ!**
