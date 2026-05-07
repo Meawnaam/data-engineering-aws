@@ -22,40 +22,79 @@
 ## 3. สถาปัตยกรรมทางเทคนิค (Technical Architecture)
 
 ```mermaid
-graph LR
-    subgraph Local_Source [Local Environment]
-        A[Python Script: sender.py] -->|Read| B[(JSON Data Batches)]
-        A -->|Write Log| C[transfer_history.csv]
-    end
+graph TD
+    %% Global Styles
+    classDef source fill:#f5f5f5,stroke:#333,stroke-width:2px;
+    classDef aws fill:#ff9900,stroke:#232f3e,stroke-width:2px,color:#fff;
+    classDef storage fill:#ffffff,stroke:#ff9900,stroke-width:2px;
+    classDef database fill:#01579b,stroke:#01579b,stroke-width:2px,color:#fff;
+    classDef bi fill:#4285f4,stroke:#333,stroke-width:2px,color:#fff;
 
-    subgraph AWS_Cloud [AWS Cloud Platform]
-        direction TB
+    %% 1. Local Environment
+    subgraph Local_Env [Local Environment]
+        A["fa:fa-file-code sender.py<br/>(Data Ingester)"]
+        B[("fa:fa-database<br/>JSON Batches")]
+        C["fa:fa-list-alt<br/>transfer_history.csv"]
+    end
+    
+    B --> A
+    A -->|Log Status| C
+    A -->|HTTPS POST| D
+
+    %% 2. AWS Ingestion & Raw Storage
+    subgraph Ingestion_Layer [Ingestion Layer]
+        D["fa:fa-gateway Amazon API Gateway"]
+        E["fa:fa-bolt AWS Lambda<br/>(Ingester)"]
+        F[("fa:fa-box S3: Raw Bucket")]
         
-        subgraph Ingestion [Ingestion Layer]
-            D[API Gateway] --> E[Lambda: Ingester]
-            E -->|Store Raw| F[S3: Raw Bucket]
-        end
-
-        subgraph Transformation [Processing Layer]
-            F --> G[Lambda: Data-Processor]
-            G -->|Clean & Format| H[S3: Processed Bucket]
-        end
-
-        subgraph Analytics [Analytics & Storage Layer]
-            I[EventBridge: Cron 00:05] -->|Trigger| J[Lambda: RDS-Aggregator]
-            H --> J
-            J -->|Insert/Update| K[(Amazon RDS: MySQL)]
-        end
+        D --> E
+        E --> F
     end
 
+    %% 3. Data Processing (Cleaning) - Added EventBridge 00:00
+    subgraph Processing_Layer [Transformation Layer]
+        G_Trigger["fa:fa-clock Amazon EventBridge<br/>(Cron 00:00)"]
+        G["fa:fa-bolt AWS Lambda<br/>(Data-Processor)"]
+        H[("fa:fa-box S3: Processed Bucket")]
+        
+        G_Trigger -->|Trigger| G
+        F --> G
+        G -->|Clean & Format| H
+    end
+
+    %% 4. Analytics & RDS - EventBridge 00:05
+    subgraph Analytics_Layer [Analytics & Storage Layer]
+        I["fa:fa-clock Amazon EventBridge<br/>(Cron 00:05)"]
+        J["fa:fa-bolt AWS Lambda<br/>(RDS-Aggregator)"]
+        
+        I -->|Trigger| J
+        H --> J
+        
+        subgraph RDS_Instance [Amazon RDS: MySQL]
+            K[("credit_feature_mart")]
+            L[("credit_score_history")]
+            M[("data_load_logs")]
+        end
+        
+        J -->|Upsert Current| K
+        J -->|Insert Daily| L
+        J -->|Audit Log| M
+    end
+
+    %% 5. Visualization
     subgraph BI_Layer [Visualization]
-        K --> L[Looker Studio Dashboard]
+        N["fa:fa-chart-bar Looker Studio<br/>(Executive Dashboard)"]
     end
 
-    %% Styling
-    style Local_Source fill:#f5f5f5,stroke:#333
-    style AWS_Cloud fill:#fff,stroke:#ff9900,stroke-width:2px
-    style K fill:#01579b,color:#fff
+    K -.->|Query| N
+    L -.->|Query| N
+
+    %% Assign Classes
+    class A,B,C source;
+    class D,E,G,J,I,G_Trigger aws;
+    class F,H storage;
+    class K,L,M database;
+    class N bi;
 ```
 
 ## 4. รายละเอียดการประมวลผลข้อมูล (Data Pipeline Logic)
